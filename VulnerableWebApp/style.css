@@ -1,0 +1,29 @@
+.login-register-card {
+    width: 50%;
+    margin: auto;
+}
+
+.login-register-form {
+    padding: 20px;
+}
+
+.like-vote-button {
+    all: unset;
+    padding-right: 5px;
+}
+
+.container {
+    font-family: arial;
+    font-size: 24px;
+    margin: 25px;
+    width: 350px;
+    outline: solid 3px black;
+}
+
+#modify{
+    background-color: yellow;
+}
+
+#delete{
+    background-color: red;
+}
