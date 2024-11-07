@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Képeim - PhotoBook</title>
+    <title>Képregényeim - KépregényMánia</title>
     <link rel="stylesheet" href="style.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-GLhlTQ8iRABdZLl6O3oVMWSktQOp6b7In1Zl3/Jr59b6EGGoI1aFkw7cmDA6j6gD" crossorigin="anonymous">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.4/font/bootstrap-icons.css">
@@ -65,7 +65,7 @@ if (isset($_POST['titleInput']) && isset($_POST['city']) && isset($_POST['catego
 <!--picture upload form-->
 <div class="card text-bg-light login-register-card">
     <div class="login-register-form">
-        <form method="post" action="my_pictures.php" enctype="multipart/form-data">
+        <form method="post" action="my_comics.php" enctype="multipart/form-data">
             <div class="mb-3">
                 <label for="titleInput" class="form-label">Cím</label>
                 <input type="text" name="titleInput" class="form-control" id="titleInput" required>

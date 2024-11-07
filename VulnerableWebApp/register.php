@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Registráció - PhotoBook</title>
+    <title>Regisztráció - KépregényMánia</title>
     <link rel="stylesheet" href="style.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-GLhlTQ8iRABdZLl6O3oVMWSktQOp6b7In1Zl3/Jr59b6EGGoI1aFkw7cmDA6j6gD" crossorigin="anonymous">
 </head>
@@ -54,18 +54,7 @@ if (isset($_POST['lastNameInput']) && isset($_POST['firstNameInput']) && isset($
             <label for="firstNameInput" class="form-label">Keresztnév</label>
             <input type="text" required name="firstNameInput" class="form-control" id="firstNameInput">
         </div>
-        <div class="mb-3">
-            <label for="city">Város</label>
-            <select class="form-select" required name="city" id="city">
-                <option selected disabled value="">Válassz a listából</option>
-                <?php
-                $stid = list_cities();
-                while ($row = oci_fetch_array($stid, OCI_ASSOC + OCI_RETURN_NULLS)) {
-                    echo '<option value="'.$row['ID'].'">'.$row['NAME'].'</option>';
-                }
-                ?>
-            </select>
-        </div>
+        
         <div class="mb-3">
             <label for="emailInput" class="form-label">Email cím</label>
             <input type="email" required name="emailInput" class="form-control" id="emailInput">

@@ -6,7 +6,7 @@ if (!($connection = connect())){
     return false;
 }
 
-$sql='DELETE FROM PB_user WHERE email=:email';
+$sql='DELETE FROM user WHERE email=:email';
 $stid = oci_parse($connection, $sql);
 
 if (!$stid) {

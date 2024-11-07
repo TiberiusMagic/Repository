@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Bejelentkezés - PhotoBook</title>
+    <title>Bejelentkezés - KépregényMánia</title>
     <link rel="stylesheet" href="style.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-GLhlTQ8iRABdZLl6O3oVMWSktQOp6b7In1Zl3/Jr59b6EGGoI1aFkw7cmDA6j6gD" crossorigin="anonymous">
 </head>
@@ -25,7 +25,7 @@ if (isset($_POST['register_button'])) {
 if (isset($_POST['emailInput']) && isset($_POST['passwordInput'])) {
     if (!empty($_POST['emailInput']) && !empty($_POST['passwordInput'])) {
         $user = oci_fetch_array(get_password_and_admin($_POST['emailInput']), OCI_ASSOC + OCI_RETURN_NULLS);
-        if ($user['PASSWORD'] == hash('sha256', $_POST['passwordInput'])) {
+        if ($user['PASSWORD'] == hash('sha256', $_POST['passwordInput'])) { //TODO: hash algoritmusokat nézni (Elavultak vs Validak)
             $_SESSION['loggedIn'] = true;
             $_SESSION['email'] = $_POST['emailInput'];
             if ($user['ADMIN'] == 1) {
