@@ -9,7 +9,7 @@
 </head>
 <body>
 <?php
-include_once('header.php');
+
 include_once('db_connection.php');
 
 if(!session_id()){
@@ -23,38 +23,32 @@ if (isset($_POST['login_button'])) {
     header("Location: login.php");
 }
 
-if (isset($_POST['lastNameInput']) && isset($_POST['firstNameInput']) && isset($_POST['city']) &&
-    isset($_POST['emailInput']) && isset($_POST['passwordInput']) && isset($_POST['repasswordInput'])) {
-    $containsEmail = oci_fetch_array(check_email($_POST['emailInput']), OCI_ASSOC + OCI_RETURN_NULLS);
+if (isset($_POST['nameInput']) && isset($_POST['emailInput']) &&
+    isset($_POST['passwordInput']) && isset($_POST['repasswordInput'])) {
 
-    if ($containsEmail['CONTAINS'] > 0) {
+    if (check_email($_POST['emailInput'])) {
         $emailError = true;
     } else if ($_POST['passwordInput'] != $_POST['repasswordInput']) {
         $passwordError = true;
     } else {
         $hashedPass = hash('sha256', $_POST['passwordInput']);
-        $result = register_user($_POST['emailInput'], $hashedPass, $_POST['lastNameInput'],
-        $_POST['firstNameInput'], $_POST['city']);
+        $result = register_user($_POST['emailInput'], $hashedPass, $_POST['nameInput']);
 
         if ($result) {
             header("Location: login.php");
         }
     }
 }
-
+include_once('header.php');
 ?>
 <div class="card text-bg-light login-register-card">
     <span class="login-register-form">
         <form method="post" action="register.php">
             <div class="mb-3">
-            <label for="lastNameInput" class="form-label">Vezetéknév</label>
-            <input type="text" required name="lastNameInput" class="form-control" id="lastNameInput">
+            <label for="nameInput" class="form-label">Név</label>
+            <input type="text" required name="nameInput" class="form-control" id="nameInput">
         </div>
-        <div class="mb-3">
-            <label for="firstNameInput" class="form-label">Keresztnév</label>
-            <input type="text" required name="firstNameInput" class="form-control" id="firstNameInput">
-        </div>
-        
+
         <div class="mb-3">
             <label for="emailInput" class="form-label">Email cím</label>
             <input type="email" required name="emailInput" class="form-control" id="emailInput">
@@ -82,7 +76,6 @@ if (isset($_POST['lastNameInput']) && isset($_POST['firstNameInput']) && isset($
         ?>
     </span>
 </div>
-
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js" integrity="sha384-w76AqPfDkMBDXo30jS1Sgez6pr3x5MlQ1ZAGC+nuZB+EYdgRZgiwxhTBTkF7CXvN" crossorigin="anonymous"></script>
 </body>
 </html>

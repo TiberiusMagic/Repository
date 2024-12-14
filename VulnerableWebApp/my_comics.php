@@ -12,7 +12,6 @@
 <?php
 include_once('header.php');
 include_once('db_connection.php');
-include_once('pictures_listing.php');
 
 $allowed_extensions = ["jpg", "jpeg", "png"];
 
@@ -24,115 +23,54 @@ if (!isset($_SESSION['loggedIn']) || !$_SESSION['loggedIn']) {
     header("Location: index.php");
 }
 
-$error = array(
-    'fileExists' => false,
-    'uploadError' => false,
-    'invalidExtension' => false,
-);
+if(isset($_SESSION['loggedIn'])){ //Csak akkor látjuk a képregényeket, ha be vagyunk jelentkezve
+if ($_SESSION['loggedIn']) {
+    if (!($connection = connect())) {
+        die("Hiba az adatbázis-kapcsolat létrehozásakor!");
+    }
 
-// picture upload
-if (isset($_POST['titleInput']) && isset($_POST['city']) && isset($_POST['category']) &&
-    isset($_POST['camera'])) {
-    if (isset($_FILES['picture']) && $_FILES['picture']["size"] !== 0) {
-        $extension = strtolower(pathinfo($_FILES['picture']["name"], PATHINFO_EXTENSION));
+    try {
+        // SQL lekérdezés az összes képregény adatának lekéréséhez
+        $sql = "SELECT id, title, price FROM comic WHERE owner =:email";
+        $stmt = $connection->prepare($sql);
+        $stmt->bindParam(':email', $_SESSION["email"]);
+        $stmt->execute();
 
-        if (in_array($extension, $allowed_extensions)) {
-            if ($_FILES['picture']["error"] === 0) {
-                $destination = 'Pictures/'.$_FILES['picture']["name"];
+        // Képregények listájának kiírása
+        echo '<div class="comic-list">';
+        echo '<br>';
+        while ($comic = $stmt->fetch(PDO::FETCH_ASSOC)) {
+            $title = $comic['title'];
+            $price = $comic['price'];
+            $imagePath = "kepek/" . $title . ".jpg"; // A borítók mappa helye
 
-                if (file_exists($destination)) {
-                    $error['fileExists'] = true;
-                }else{
-                    if (move_uploaded_file($_FILES['picture']["tmp_name"], $destination)) {
-                        echo "Sikeres fájlfeltöltés! <br/>";
-                        add_picture($_FILES['picture']["name"], $_POST['titleInput'], $_SESSION['email'],
-                                    $_POST['camera'], $_POST['city']);
-                        add_picture_to_category($_FILES['picture']["name"], $_POST['category']);
-                    } else {
-                        $error['uploadError'] = true;
-                    }
-                }
-            } else {
-                $error['uploadError'] = true;
+            echo '<div class="comic-item">';
+            echo '<h3>' . htmlspecialchars($title) . '</h3>';
+            echo '<p>Ár: ' . htmlspecialchars($price) . ' Ft</p>';
+
+            // Ellenőrizni, hogy létezik-e a borító kép
+            if (file_exists($imagePath)) {
+                ?>
+
+                <a href="comic.php?id=<?php echo $comic['id']; ?>">
+                    <img src="kepek/<?php echo htmlspecialchars($comic['title']); ?>.jpg" alt="<?php echo htmlspecialchars($comic['title']); ?>">
+                </a>
+
+
+            <?php } else {
+                echo '<p>Nincs elérhető borító.</p>';
             }
-        } else {
-            $error['invalidExtension'] = true;
+
+            echo '</div>';
         }
+        echo '</div>';
+
+    } catch (PDOException $e) {
+        die("Hiba történt az adatok lekérésekor: " . $e->getMessage());
     }
 }
+}
 ?>
-
-<!--picture upload form-->
-<div class="card text-bg-light login-register-card">
-    <div class="login-register-form">
-        <form method="post" action="my_comics.php" enctype="multipart/form-data">
-            <div class="mb-3">
-                <label for="titleInput" class="form-label">Cím</label>
-                <input type="text" name="titleInput" class="form-control" id="titleInput" required>
-            </div>
-            <div class="mb-3">
-                <label for="city">Város</label>
-                <select class="form-select" required name="city" id="city">
-                <option selected disabled value="">Válassz a listából</option>
-                <?php
-                $stid = list_cities();
-                while ($row = oci_fetch_array($stid, OCI_ASSOC + OCI_RETURN_NULLS)) {
-                    echo '<option value="'.$row['ID'].'">'.$row['NAME'].'</option>';
-                }
-                ?>
-                </select>
-            </div>
-            <div class="mb-3">
-                <label for="category">Kategória</label>
-                <select class="form-select" required name="category" id="category">
-                <option selected disabled value="">Válassz a listából</option>
-                <?php
-                $stid = list_categories();
-                while ($row = oci_fetch_array($stid, OCI_ASSOC + OCI_RETURN_NULLS)) {
-                    echo '<option value="'.$row['ID'].'">'.$row['NAME'].'</option>';
-                }
-                ?>
-                </select>
-            </div>
-            <div class="mb-3">
-                <label for="camera">Fényképező</label>
-                <select class="form-select" required name="camera" id="camera">
-                <option selected disabled value="">Válassz a listából</option>
-                <?php
-                $stid = list_cameras_with_makers();
-                while ($row = oci_fetch_array($stid, OCI_ASSOC + OCI_RETURN_NULLS)) {
-                    echo '<option value="'.$row['ID'].'">'.$row['MAKER'].' '.$row['NAME'].'</option>';
-                }
-                ?>
-                </select>
-            </div>
-            <div class="mb-3">
-                <label for="formFile" class="form-label">Kép kiválasztása</label>
-                <input class="form-control" type="file" id="formFile" name="picture" accept="image/*">
-            </div>
-            <button type="submit" class="btn btn-primary" style="margin-bottom: 10px">Kép feltöltése</button>
-        </form>
-            <?php
-            if ($error['fileExists']) {
-                echo '<div class="alert alert-danger" style="margin-top: 5px" role="alert">Ilyen nevű fájl már létezik!</div>';
-            }
-
-            if ($error['uploadError']) {
-                echo '<div class="alert alert-danger" style="margin-top: 5px" role="alert">A fájlfeltöltés nem sikerült!</div>';
-            }
-
-            if ($error['fileExists']) {
-                echo '<div class="alert alert-danger" style="margin-top: 5px" role="alert">A fájl kiterjesztése nem megfelelő!</div>';
-            }
-            ?>
-    </div>
-</div>
-
-<?php
-// display user pictures
-user_pictures_listing($_SESSION['email']);
-?>
-
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js" integrity="sha384-w76AqPfDkMBDXo30jS1Sgez6pr3x5MlQ1ZAGC+nuZB+EYdgRZgiwxhTBTkF7CXvN" crossorigin="anonymous"></script>
 </body>
 </html>

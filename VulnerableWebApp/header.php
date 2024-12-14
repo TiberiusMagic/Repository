@@ -8,14 +8,10 @@
         session_start();
     }
 
-    if (isset($_GET['delete']) && $_GET['delete'] = 'true') {
-        delete_notifications($_SESSION['email']);
-        header("Location: " . $_SERVER["HTTP_REFERER"]);
-    }
     ?>
     <nav class="navbar navbar-expand-lg bg-body-tertiary">
         <div class="container-fluid">
-            <a class="navbar-brand" href="/photo-book/PhotoBook/index.php">PhotoBook</a>
+            <a class="navbar-brand" href="/Repository/VulnerableWebApp/index.php">KépregényMánia</a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
@@ -27,21 +23,18 @@
                         </a>
                         <ul class="dropdown-menu">
                             <?php
-                            $stid = list_categories();
-                            while ($row = oci_fetch_array($stid, OCI_ASSOC + OCI_RETURN_NULLS)) {
-                                echo '<li><a class="dropdown-item" href="/Repository/VulnerableWebApp/?category='.$row['NAME'].'">'
-                                    .$row['NAME'].'<span style="float: right">'.$row['NUM_OF_PICTURES'].' '
-                                    .'<i class="bi bi-images"></i></span>'.'</a></li>';
-                            }
-                            ?>
+                            $categories = list_categories();
+                            if ($categories === false) {
+                                die("Hiba történt a kategóriák lekérdezésekor.");
+                            }foreach ($categories as $category): ?>
+                                <option value="<?php echo htmlspecialchars($category['name']); ?>">
+                                    <?php echo htmlspecialchars($category['name']); ?>
+                                </option>
+                            <?php endforeach;?>
+
                         </ul>
                     </li>
-                    <li class="nav-item">
-                        <form class="d-flex" role="search" method="get" action="/VulnerableWebApp/index.php">
-                            <input class="form-control me-2" type="search" placeholder="Keresés" aria-label="Search" name="search">
-                            <button class="btn btn-outline-success" type="submit">Keresés</button>
-                        </form>
-                    </li>
+
 
                     <li class="nav-item dropdown">
                         <?php
@@ -58,14 +51,25 @@
                         <ul class="dropdown-menu">
                             <?php
                             if (isset($_SESSION['loggedIn']) && $_SESSION['loggedIn']) {
-                                echo '<li><a class="dropdown-item" href="/VulnerableWebApp/my_comics.php">Képeim</a></li>
-                                          <li><a class="dropdown-item" href="/VulnerableWebApp/my_account.php">Beállítások</a></li>
-                                          <li><a class="dropdown-item" href="/VulnerableWebApp/logout.php?logout=true">Kijelentkezés</a></li>';
+                                echo '<li><a class="dropdown-item" href="/Repository/VulnerableWebApp/my_comics.php">Képregényeim</a></li>
+                                          <li><a class="dropdown-item" href="/Repository/VulnerableWebApp/my_account.php">Beállítások</a></li>
+                                          <li><a class="dropdown-item" href="/Repository/VulnerableWebApp/logout.php?logout=true">Kijelentkezés</a></li>';
                             } else {
-                                echo '<li><a class="dropdown-item" href="/VulnerableWebApp/login.php">Bejelentkezés</a></li>';
+                                echo '<li><a class="dropdown-item" href="/Repository/VulnerableWebApp/login.php">Bejelentkezés</a></li>';
+                                echo '<li><a class="dropdown-item" href="/Repository/VulnerableWebApp/register.php">Regisztráció</a></li>';
                             }
                             ?>
                         </ul>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="balance_adding.php" role="button" aria-expanded="false">
+                             <?php
+                            if (isset($_SESSION['loggedIn']) && $_SESSION['loggedIn']){
+                                $money = money_of_user($_SESSION['email']);
+                                echo $money['money_forint'] . " Forint";
+                            }
+                            ?>
+                        </a>
                     </li>
                 </ul>
             </div>

@@ -6,19 +6,18 @@ if (!($connection = connect())){
     return false;
 }
 
-$sql='DELETE FROM user WHERE email=:email';
-$stid = oci_parse($connection, $sql);
+try {
+    $sql = 'DELETE FROM user WHERE email = :email';
+    $stmt = $connection->prepare($sql);
 
-if (!$stid) {
-    $error = oci_error($connection);
-    oci_close($connection);
-    echo $error['message'] . "\n";
-    die();
+    $stmt->bindParam(':email', $_SESSION["email"]);
+
+    $stmt->execute();
+
+    session_destroy();
+    header("Location: logout.php");
+    exit();
+} catch (PDOException $e) {
+    die("Hiba történt a felhasználó törlésekor: " . $e->getMessage());
 }
 
-oci_bind_by_name($stid, ':email', $_SESSION["email"]);
-oci_execute($stid);
-oci_close($connection);
-session_destroy();
-header("Location: logout.php");
-?>

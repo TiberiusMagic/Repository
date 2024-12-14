@@ -27,3 +27,57 @@
 #delete{
     background-color: red;
 }
+
+.comic-list {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 20px;
+    padding: 20px;
+    background-color: #f9f9f9; /* Háttérszín a lista számára */
+}
+
+.comic-item {
+    border: 8px solid black; /* Fekete keret */
+    border-radius: 30px; /* Lekerekített sarkok */
+    width: 400px; /* Fix szélesség */
+    text-align: center; /* Középre igazítás */
+    background-color: #ffffff; /* Fehér háttér */
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3); /* Árnyék a kártya körül */
+    padding: 10px; /* Belső margó */
+}
+
+.comic-item h3 {
+    font-size: 18px;
+    margin: 10px 0;
+    color: #333; /* Sötétszürke szöveg */
+}
+
+.comic-item img {
+    max-width: 100%;
+    height: auto;
+    margin: 10px 0;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.comic-item p {
+    font-size: 16px;
+    font-weight: bold;
+    margin: 10px 0;
+    color: #555;
+}
+
+body {
+    display: flex;
+    /*justify-content: center;*/
+    align-items: center;
+    flex-direction: column;
+    margin: 0;
+    font-family: Arial, sans-serif;
+    min-height: 100vh;
+}
+
+.comic-item + .comic-item {
+    margin-top: 20px;
+}

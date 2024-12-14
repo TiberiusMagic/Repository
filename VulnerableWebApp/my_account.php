@@ -27,62 +27,48 @@ if (!($connection = connect())){
 $emailError = false;
 $passwordError = false;
 
-//print_r($_POST);
-//prepare error indicator
 $error = "<p class=" . "error_message" . ">";
 $error_count = 0;
 
-if(!isset($_POST["last_name"]) || empty(trim($_POST["last_name"])) ||
-    !isset($_POST["first_name"]) || empty(trim($_POST["first_name"])) ||
+if(!isset($_POST["name"]) || empty(trim($_POST["name"])) ||
     !isset($_POST["email"]) || empty(trim($_POST["email"]))) {
     $error .= "Kérlek tölts ki minden mezőt!<br>";
     $error_count++;
 }
-/*if(isset($_POST["email"])){
-    if($_POST["email"]!=$_SESSION["email"]){
-        //ha megváltozott, megnézzük helyes-e (van-e már ilyen, +formátum) :
-        $containsEmail = oci_fetch_array(check_email($_POST['email']), OCI_ASSOC + OCI_RETURN_NULLS);
-        if ($containsEmail['CONTAINS'] > 0) {
-            $emailError = true;
-        }else{
-            $sql="UPDATE User SET email=:email WHERE email=:regi";
 
+if(isset($_POST["name"])){
+    $sql="UPDATE user SET name=:name WHERE email=:email";
+    $stmt = $connection->prepare($sql);
+    $stmt->bindParam(':name', $_POST["name"], PDO::PARAM_STR);
+    $stmt->bindParam(':email', $_SESSION["email"], PDO::PARAM_STR);
 
-            $valami=oci_parse($connection,$sql);
-            oci_bind_by_name($valami, ':email', $_POST["email"]);
-            oci_bind_by_name($valami, ':regi', $_SESSION["email"]);
-            oci_execute($valami);
-            $_SESSION["email"]=$_POST["email"];
-        }
+    try {
+        $stmt->execute();
+        echo "<p class='success_message'>Név sikeresen módosítva.</p>";
+    } catch (PDOException $e) {
+        echo "<p class='error_message'>Hiba történt a név módosítása során: " . $e->getMessage() . "</p>";
     }
-}*/
-if(isset($_POST["last_name"])){
-    $sql="UPDATE User SET last_name=:uto WHERE email=:email";
-    $valami=oci_parse($connection,$sql);
-    oci_bind_by_name($valami, ':uto', $_POST["last_name"]);
-    oci_bind_by_name($valami, ':email', $_SESSION["email"]);
-    oci_execute($valami);
 }
-
-if(isset($_POST["first_name"])){
-    $sql="UPDATE User SET first_name=:elo WHERE email=:email";
-    $valami=oci_parse($connection,$sql);
-    oci_bind_by_name($valami, ':elo', $_POST["first_name"]);
-    oci_bind_by_name($valami, ':email', $_SESSION["email"]);
-    oci_execute($valami);
-}
-
 
 if(isset($_POST["old_pass"]) && isset($_POST["new_pass"]) && isset($_POST["new_pass_again"])){
-    $user = oci_fetch_array(get_password_and_admin($_SESSION['email']), OCI_ASSOC + OCI_RETURN_NULLS);
-    if(hash('sha256',$_POST["old_pass"])==$user['PASSWORD']){
+    $user = get_password_and_admin($_SESSION['email']);
+    if(hash('sha256',$_POST["old_pass"])==$user['password']){
         if($_POST["new_pass"]==$_POST["new_pass_again"]){
             $hashelt=hash('sha256',$_POST["new_pass"]);
-            $sql="UPDATE User SET password=:pass WHERE email=:email";
-            $valami=oci_parse($connection,$sql);
-            oci_bind_by_name($valami, ':pass', $hashelt);
-            oci_bind_by_name($valami, ':email', $_SESSION["email"]);
-            oci_execute($valami);
+            $sql="UPDATE user SET password=:pass WHERE email=:email";
+
+            $stmt = $connection->prepare($sql);
+            $stmt->bindParam(':pass', $hashelt, PDO::PARAM_STR);
+            $stmt->bindParam(':email', $_SESSION["email"], PDO::PARAM_STR);
+
+            try {
+                $stmt->execute();
+                echo "<p class='success_message'>Jelszó sikeresen módosítva.</p>";
+            } catch (PDOException $e) {
+                echo "<p class='error_message'>Hiba történt a jelszó módosítása során: " . $e->getMessage() . "</p>";
+            }
+        }else {
+            echo "<p class='error_message'>Az új jelszavak nem egyeznek.</p>";
         }
     }
 }
@@ -94,135 +80,31 @@ if(isset($_POST["old_pass"]) && isset($_POST["new_pass"]) && isset($_POST["new_p
             <div class="balra">
             <h1>
              <?php
-                    $tutu=$_SESSION["email"];
-                    //$sql = 'SELECT last_name FROM User WHERE $_SESSION["email"] = email';
                     if (!($connection = connect())){
                         return false;
                     }
+             $sql = "SELECT name FROM user WHERE email = :email";
+             $stmt = $connection->prepare($sql);
+             $stmt->bindParam(':email', $_SESSION['email']);
+             $stmt->execute();
 
-                    $faka = oci_parse($connection, "SELECT last_name, first_name FROM User WHERE email='".$_SESSION['email']."'");
-
-                    /*if (!$faka) {
-                        $error = oci_error($connection);
-                        oci_close($connection);
-                        echo $error['message'] . "\n";
-                        die();
-                    }*/
-
-                    oci_execute($faka);
-                    if (!$faka) {
-                        $error = oci_error($faka);
-                        oci_close($connection);
-                        echo $error['message'] . "\n";
-                        die();
-                    }
-
-                    while($row=oci_fetch_array($faka)){
-                        echo 'Hello, '.$row[0]." ".$row[1];
-
-
-                    }
-
-                    oci_close($connection);
+             $user = $stmt->fetch(PDO::FETCH_ASSOC);
+             if ($user) {
+                 echo 'Hello, ' . htmlspecialchars($user['name']);
+             }
                     ?>
             </h1>
             <br>
-            <label>Vezetéknév</label><br>
-            <input type="text" name="last_name" value="<?php
-            $tutu=$_SESSION["email"];
-            //$sql = 'SELECT last_name FROM User WHERE $_SESSION["email"] = email';
-            if (!($connection = connect())){
-                return false;
+            <label>Név</label><br>
+            <input type="text" name="name" value="<?php
+            if ($user) {
+                echo htmlspecialchars($user['name']);
             }
-
-            $faka = oci_parse($connection, "SELECT last_name, first_name FROM PB_user WHERE email=:email");
-
-            /*if (!$faka) {
-                $error = oci_error($connection);
-                oci_close($connection);
-                echo $error['message'] . "\n";
-                die();
-            }*/
-            oci_bind_by_name($faka, ':email', $_SESSION["email"]);
-            oci_execute($faka);
-            if (!$faka) {
-                $error = oci_error($faka);
-                oci_close($connection);
-                echo $error['message'] . "\n";
-                die();
-            }
-
-            while($row=oci_fetch_array($faka)){
-                echo $row[0];
-            }
-
-            oci_close($connection);
             ?>"><br>
-            <label>Keresztnév</label><br>
-            <input type="text" name="first_name" value="<?php
-            $tutu=$_SESSION["email"];
-            //$sql = 'SELECT last_name FROM User WHERE $_SESSION["email"] = email';
-            if (!($connection = connect())){
-                return false;
-            }
-
-            $faka = oci_parse($connection, "SELECT last_name, first_name FROM PB_user WHERE email=:email");
-
-            /*if (!$faka) {
-                $error = oci_error($connection);
-                oci_close($connection);
-                echo $error['message'] . "\n";
-                die();
-            }*/
-            oci_bind_by_name($faka, ':email', $_SESSION["email"]);
-            oci_execute($faka);
-            if (!$faka) {
-                $error = oci_error($faka);
-                oci_close($connection);
-                echo $error['message'] . "\n";
-                die();
-            }
-
-            while($row=oci_fetch_array($faka)){
-                echo $row[1];
-
-
-            }
-
-            oci_close($connection);
-            ?>"><br>
+            <br>
             <label>Email</label><br>
             <input type="text" name="email" disabled value="<?php
-            $tutu=$_SESSION["email"];
-            //$sql = 'SELECT last_name FROM PB_user WHERE $_SESSION["email"] = email';
-            if (!($connection = connect())){
-                return false;
-            }
-
-            $faka = oci_parse($connection, "SELECT email FROM User WHERE email=:email");
-
-            /*if (!$faka) {
-                $error = oci_error($connection);
-                oci_close($connection);
-                echo $error['message'] . "\n";
-                die();
-            }*/
-            oci_bind_by_name($faka, ':email', $_SESSION["email"]);
-            oci_execute($faka);
-            if (!$faka) {
-                $error = oci_error($faka);
-                oci_close($connection);
-                echo $error['message'] . "\n";
-                die();
-            }
-
-            while($row=oci_fetch_array($faka)){
-                echo $row[0];
-
-
-            }
-
-            oci_close($connection);
+            echo htmlspecialchars($_SESSION['email']);
             ?>"><br>
             <label>Régi jelszó</label><br>
             <input type="password" name="old_pass"><br>

@@ -9,7 +9,7 @@
 </head>
 <body>
 <?php
-include_once('header.php');
+
 include_once('db_connection.php');
 
 if(!session_id()){
@@ -24,21 +24,23 @@ if (isset($_POST['register_button'])) {
 
 if (isset($_POST['emailInput']) && isset($_POST['passwordInput'])) {
     if (!empty($_POST['emailInput']) && !empty($_POST['passwordInput'])) {
-        $user = oci_fetch_array(get_password_and_admin($_POST['emailInput']), OCI_ASSOC + OCI_RETURN_NULLS);
-        if ($user['PASSWORD'] == hash('sha256', $_POST['passwordInput'])) { //TODO: hash algoritmusokat nézni (Elavultak vs Validak)
+        $user = get_password_and_admin($_POST['emailInput']);
+        if ($user['password'] == hash('sha256', $_POST['passwordInput'])) { //TODO: hash algoritmusokat nézni (Elavultak vs Validak)
             $_SESSION['loggedIn'] = true;
             $_SESSION['email'] = $_POST['emailInput'];
-            if ($user['ADMIN'] == 1) {
+            if ($user['admin'] == 1) {
                 $_SESSION['Admin'] = true;
             } else {
                 $_SESSION['Admin'] = false;
             }
             header("Location: index.php");
+            exit(); // Fontos!
         } else {
             $error = true;
         }
     }
 }
+include_once('header.php');
 ?>
     <div class="card text-bg-light login-register-card">
         <span class="login-register-form">
